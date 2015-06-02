@@ -1,0 +1,24 @@
+My myalloc and myalloc2 work to find a block that is unallocated and is big enough to accomodate the desired amount of space that the user is calling. If it finds it, then it allocates to the closest appropriate multiple of 8 after padding for the control word. Then it unallocates any remaining space before the next block or the sentinel, and returns a user pointer to the newly allocated block. If there is not enough space, then they return NULL. All that printallocation does is iterates through the "heap" and checks to see if the block is allocated or not and gets its length from the length function to print out to the terminal and help debug.
+
+The myfree function simply takes in a user pointer to a block and unallocates the control word. Then it looks to see if it can coalesce. Coalesce iterates through the "heap" and combines two unallocated blocks of memory if it comes across them. I do this in myfree to make sure there is always the maximum amount of memory available for an upcoming malloc. 
+
+The mygc function is the garbage collector that calls many others while it iterates through both the stack and the heap. It first finds the bottom of the stack in the GC_Init function we were given. One word at a time, it iterates through the stack and calls the mark function on every single word. The mark function calls isPtr to check to see if the value of the word is in the bounds of an allocated block in the "heap", then checks to see if the block is marked or not. It then marks the control word of all blocks that are reachable and iterates through that block one word at a time doing the same thing. After all this, sweep is called to iterate through the "heap" and calls myfree on all blocks that are allocated but not marked (are not reachable). 
+
+In all my helper functions that deal with allocating, marking, and checking blocks, I use the bitwise operators &, |, and << to essentially make comparisons with the binary location that I want to access (0 to allocate/unallocate, and 1 to mark/unmark), with a 1 by shifting a binary locations. These functions will all therefore take in the control word. 
+
+My length function ignores whether a block is allocated/marked or not by simply giving the desirable multiple of 8 size. This is then used in my nextBlock function to increment blocks when iterating through the heap. 
+
+COMPILING AND RUNNING: 
+The code compiles without any errors but has a lot of warnings from when I print out the addresses inside the heap. There are also some warnings coming from the getStack.c file that I'm not sure of what they mean exactly. Either way, it all compiles and seems to be running pretty well on each test.
+	
+TEST1: Seems to be working well.
+
+TEST1A: Seems to be working well.	
+
+TEST2: Seems to be working well. 
+	
+TEST3: Mine leaves one node allocated at the end. As far as I can tell, this is what test3 is supposed to be doing, because the endNode is not garbage like the comment in myalloc.c says, but it does not match up with the executable, which unallocates everything by the end. 
+	
+TEST4: It seems to be working well, I think call coalesce more often then the executable file does (becasue I call coalesce in myfree), and it is making the addresses and block lengths a bit different from the executables but I believe it works properly because both are leaving a block of size 16 allocated.
+	
+TEST5: In the given test5 executable the entire heap is unallocated in the end, but mine still leaves two allocated blocks. When I look at the code in test5, it looks to me like there should be allocated memory left due to that last short for loop, but I'm not positive. 
